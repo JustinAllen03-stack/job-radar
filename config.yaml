@@ -1,0 +1,104 @@
+# job-radar settings. Edit freely; every change takes effect on the next run.
+# A newly added company is "seeded" on its first run: existing jobs go to BACKLOG.md, no alert spam.
+
+limits:
+  max_years: 2            # reject if the posting's MINIMUM required experience is above this (3+ = rejected)
+  max_age_days: 14        # ignore postings older than this (reposts, stale listings)
+  alert_after_failures: 18   # ~3 h of a source failing in a row -> one warning message
+  seed_detail_budget: 150
+
+claude:
+  model: claude-haiku-4-5   # cheap + fast; change if Anthropic renames/retires it
+  min_fit: 3                # 1-5; raise to 4 for fewer, stronger alerts
+
+geo:
+  include: [toronto, mississauga, brampton, markham, vaughan, concord, "richmond hill", oakville, burlington,
+            milton, pickering, ajax, whitby, oshawa, scarborough, etobicoke, "north york", thornhill, woodbridge,
+            newmarket, aurora, bolton, caledon, hamilton, kitchener, waterloo, cambridge, guelph, alliston, gta]
+  exclude: [ottawa, kanata, montreal, "montréal", laval, quebec, vancouver, burnaby, calgary, edmonton,
+            winnipeg, halifax, victoria, kingston, windsor, "london, on", "london, ontario", sudbury,
+            "united states", usa, "u.s.", india, china, germany, "united kingdom", israel, mexico, ireland]
+  allow_unspecified_remote: false
+
+titles:
+  role_terms: [engineer, engineering, "eit", technologist, designer, developer, scientist, "r&d",
+               "project coordinator", "associate project manager", "junior project manager", "project engineer",
+               "product development", "new grad", graduate, "rotational"]
+  hardware_terms: [hardware, electrical, electronic, electronics, pcb, pcba, embedded, firmware, board, circuit,
+                   analog, "mixed-signal", "mixed signal", power, "signal integrity", "test", testing, validation,
+                   npi, manufacturing, production, process, reliability, quality, systems, sensor, sensors,
+                   optical, optics, photonic, photonics, "biomedical", medical, device, "r&d", product,
+                   prototype, prototyping, mechatronics, instrumentation, controls, layout, "emc", compliance,
+                   "new product"]
+  software_only: [software, "full stack", "full-stack", frontend, "front-end", backend, "back-end", devops, sre,
+                  cloud, "data engineer", "data scientist", "machine learning", ml, ai, web, mobile, ios, android,
+                  security, "site reliability", platform, "salesforce", sap]
+  exclude: [senior, "sr", "sr.", staff, principal, lead, manager, director, head, "vp", "vice president",
+            architect, fellow, intern, internship, "co-op", coop, "co op", student, summer, postdoc,
+            "post-doc", sales, account, marketing, "business development", nurse, "clinical specialist", technician, "rtl", asic, "physical design", "design verification", dft,
+            "timing", "cpu", "gpu", "verification engineer", "sales engineer", "applications engineer",
+            "patent", "regulatory affairs", chief, "expert", supervisor, "team leader"]
+  exclude_overrides: ["associate project manager", "junior project manager"]
+
+companies:
+  medtech:
+    # --- big medtech (Workday). Area filter is applied automatically from each site's location list.
+    - {name: Medtronic, type: workday, tenant: medtronic, wd: 1, site: MedtronicCareers}
+    - {name: Stryker, type: workday, tenant: stryker, wd: 1, site: StrykerCareers}
+    - {name: "Johnson & Johnson MedTech", type: workday, tenant: jj, wd: 5, site: JJ}
+    - {name: Baxter, type: workday, tenant: baxter, wd: 1, site: baxter}
+    - {name: BD, type: workday, tenant: bdx, wd: 1, site: EXTERNAL_CAREER_SITE_USA}
+    - {name: Philips, type: workday, tenant: philips, wd: 3, site: jobs-and-careers}
+    - {name: GE HealthCare, type: workday, tenant: gehc, wd: 5, site: GEHC_ExternalSite}
+    - {name: Abbott, type: workday, tenant: abbott, wd: 5, site: abbottcareers}
+    - {name: Thermo Fisher, type: workday, tenant: thermofisher, wd: 5, site: ThermoFisherCareers}
+    - {name: "Danaher (SCIEX, Beckman, Leica)", type: workday, tenant: danaher, wd: 1, site: DanaherJobs}
+    - {name: Standard BioTools, type: workday, tenant: standardbiotools, wd: 5, site: External}
+    - {name: Siemens Healthineers / Varian, type: workday, tenant: onehealthineers, wd: 3, site: SHSJB}
+    # --- SuccessFactors RSS (untested feed path; --check will tell you if it works)
+    - {name: Northern Digital (NDI), type: sf_rss, base: "https://careers.ndigital.com", keywords: [engineer], local_company: true}
+    - {name: ATS Corporation, type: sf_rss, base: "https://jobs.atsautomation.com", keywords: [engineer, electrical]}
+    - {name: Olympus, type: sf_rss, base: "https://careers.olympusamerica.com", keywords: [engineer]}
+    # --- smaller GTA/KW medtech
+    - {name: Intellijoint Surgical, type: jazzhr, id: intellijointsurgical, local_company: true}
+    - {name: Myant, type: jazzhr, id: myant, local_company: true}
+    - {name: Interaxon (Muse), type: bamboohr, id: interaxon, local_company: true}
+    - {name: Perimeter Medical Imaging, type: bamboohr, id: perimetermed}
+    - {name: Cloud DX, type: smartrecruiters, id: CloudDXInc, local_company: true}
+    # --- no job API: watch the careers page for new links
+    - {name: StarFish Medical, type: pagelinks, url: "https://starfishmedical.com/careers/"}
+    - {name: Venus Concept, type: pagelinks, url: "https://www.venus.ai/careers", local_company: true}
+    - {name: MolecuLight, type: pagelinks, url: "https://moleculight.com/careers/", local_company: true}
+    - {name: Profound Medical, type: pagelinks, url: "https://profoundmedical.com/careers/"}
+
+  hardware:
+    - {name: Tenstorrent, type: greenhouse, id: tenstorrent}
+    - {name: Lightmatter, type: greenhouse, id: lightmatter}
+    - {name: Geotab, type: greenhouse, id: geotab}
+    - {name: Cerebras, type: ashby, id: cerebras}
+    - {name: Miovision, type: ashby, id: miovision, local_company: true}
+    - {name: Kepler Communications, type: lever, id: kepler, local_company: true}
+    - {name: Avidbots, type: bamboohr, id: avidbots, local_company: true}
+    - {name: Voltera, type: bamboohr, id: voltera, local_company: true}
+    - {name: ecobee (Generac), type: workday, tenant: generac, wd: 5, site: External}
+    - {name: Clearpath / OTTO (Rockwell), type: workday, tenant: rockwellautomation, wd: 1, site: External_Rockwell_Automation}
+    - {name: Intel, type: workday, tenant: intel, wd: 1, site: External}
+    - {name: Altera, type: workday, tenant: altera, wd: 1, site: Altera}
+    - {name: Marvell, type: workday, tenant: marvell, wd: 1, site: MarvellCareers}
+    - {name: BlackBerry QNX, type: workday, tenant: bb, wd: 3, site: QNX}
+    - {name: Teledyne (DALSA/FLIR), type: workday, tenant: flir, wd: 1, site: flircareers}
+    - {name: Thales Canada, type: workday, tenant: thales, wd: 3, site: Careers}
+    - {name: Magna, type: workday, tenant: magna, wd: 3, site: Magna}
+    - {name: GM Canadian Technical Centre, type: workday, tenant: generalmotors, wd: 5, site: Careers_GM}
+    - {name: AMD, type: jibe, base: "https://careers.amd.com", params: {location: Markham}}
+    - {name: Qualcomm, type: eightfold, base: "https://careers.qualcomm.com", params: {domain: qualcomm.com, query: "", location: Markham}}
+    - {name: Celestica, type: sf_rss, base: "https://careers.celestica.com", keywords: [engineer, PCB, hardware]}
+    - {name: Evertz, type: pagelinks, url: "https://evertz.com/contact/careers/", local_company: true}
+
+# Optional catch-all over many job sites (slower: hours, not minutes). Needs ADZUNA_APP_ID / ADZUNA_APP_KEY secrets.
+adzuna:
+  enabled: true
+  where: Toronto
+  distance_km: 80
+  queries: ["biomedical engineer", "medical device engineer", "PCB designer", "PCB design engineer",
+            "hardware engineer", "electrical engineer junior", "electronics engineer", "embedded hardware engineer"]

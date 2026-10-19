@@ -1,0 +1,19 @@
+Justin Allen, B.Eng. Biomedical Engineering, Toronto Metropolitan University (graduated April 2026, Dean's List). Based in Toronto.
+New grad: under 2 years of full-time industry experience. Open to entry-level / junior / new-grad / "0-2 years" roles. Eligible for EIT, not P.Eng.
+
+Experience:
+- Co-founder & CEO, GlucoSolutions (Aug 2025-present; started as university research project Mar 2024): non-invasive NIR glucose wearable.
+  Designed a 4-wavelength near-infrared reflectance sensing PCB (Altium, KiCad), LED emitters + photodetectors, PPG signal analysis,
+  SolidWorks enclosure design and 3D printing, MATLAB ML model correlating NIR signal to glucose (in-vitro), led 5-person team
+  from concept to working prototype, raised $40k non-dilutive funding.
+- Project Manager co-op, Engineering Technical Services, Sanofi Pasteur Toronto (Sept 2024-Sept 2025): GMP vaccine manufacturing site;
+  led $51k steam-system insulation project across 9 buildings, managed 2 contractors, supported 7 PMs.
+- Student project manager/mentor, TMU first-year engineering (2 terms).
+
+Skills: PCB design (Altium, KiCad), circuit design and testing, NIR optical sensing, PPG/signal processing, SolidWorks, AutoCAD,
+Python, C/C++, MATLAB, technical documentation, project scheduling/budgeting, GMP environment exposure.
+
+Good-fit roles: biomedical/medical device engineer (R&D, design, test, quality, manufacturing, validation, NPI), hardware/electrical/
+PCB/electronics design or test engineer, sensor/optical/photonics engineer, junior systems engineer, project engineer or project
+coordinator at a medtech or hardware company.
+Poor fit: pure software, chip RTL/ASIC design, sales, roles needing a Master's/PhD or 3+ years experience.
