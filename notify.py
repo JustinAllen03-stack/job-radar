@@ -18,7 +18,9 @@ def _clean(s, n):
 
 
 def format_text(j, verdict):
-    lines = [f"NEW JOB: {j['title']}", f"{j['company']} | {j['location'] or 'location not listed'}"]
+    lines = [f"NEW JOB: {j['title']}",
+             f"{j['company']} | {j.get('_loc_short') or j['location'] or 'location not listed'}",
+             f"Posted: {j.get('_posted_text') or 'date not listed'}"]
     if verdict:
         lines.append(f"Fit {verdict.get('fit', '?')}/5: {verdict.get('reason', '')}")
     elif j.get("_rule_note"):
@@ -46,7 +48,7 @@ def send(j=None, verdict=None, text=None):
             tpl = env.get("WA_TEMPLATE", "job_alert")
             # template body must be: New job: {{1}} at {{2}} ({{3}}). {{4}} Apply: {{5}}
             if j:
-                params = [_clean(j["title"], 120), _clean(j["company"], 60), _clean(j["location"] or "n/a", 80),
+                params = [_clean(j["title"], 120), _clean(j["company"], 60), _clean((j.get("_loc_short") or j["location"] or "n/a") + f", posted {j.get('_posted_text', '?')}", 80),
                           _clean((verdict or {}).get("reason") or j.get("_rule_note", "") or "-", 150),
                           _clean(j["url"], 500)]
             else:

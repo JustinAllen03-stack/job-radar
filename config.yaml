@@ -3,7 +3,10 @@
 
 limits:
   max_years: 2            # reject if the posting's MINIMUM required experience is above this (3+ = rejected)
-  max_age_days: 14        # ignore postings older than this (reposts, stale listings)
+  preferred_years_cap: 2  # "N years preferred / an asset" also counts: 3+ preferred is rejected too
+  max_age_days: 14        # new-posting alerts: ignore postings older than this (reposts, stale listings)
+  backlog_max_age_days: 30   # BACKLOG.md: show open roles up to this old
+  rebuild_detail_budget: 400
   alert_after_failures: 18   # ~3 h of a source failing in a row -> one warning message
   seed_detail_budget: 150
 
@@ -30,14 +33,27 @@ titles:
                    optical, optics, photonic, photonics, "biomedical", medical, device, "r&d", product,
                    prototype, prototyping, mechatronics, instrumentation, controls, layout, "emc", compliance,
                    "new product"]
-  software_only: [software, "full stack", "full-stack", frontend, "front-end", backend, "back-end", devops, sre,
+  # titles with any of these are dropped unless they also contain a strong_hardware_terms word
+  software_only: [software, devops, "test developer", "simulation developer", kernel, drivers, "full stack", "full-stack", frontend, "front-end", backend, "back-end", devops, sre,
                   cloud, "data engineer", "data scientist", "machine learning", ml, ai, web, mobile, ios, android,
                   security, "site reliability", platform, "salesforce", sap]
+  # clearly-hardware words: let a title through even if it also says software/developer/scientist
+  strong_hardware_terms: [hardware, electrical, electronic, electronics, pcb, pcba, circuit, circuits, analog,
+                          "mixed-signal", "mixed signal", board, "signal integrity", "power electronics", biomedical,
+                          "medical device", sensor, sensors, optical, optics, photonic, photonics, mechatronics,
+                          instrumentation, emc]
+  # these role words are too vague on their own (e.g. "Scientist I - Analytical", "Test Developer")
+  weak_role_terms: [developer, scientist, technologist, designer]
+  weak_role_domain_terms: [hardware, electrical, electronic, electronics, pcb, pcba, circuit, analog, "mixed-signal",
+                           biomedical, medical, device, sensor, sensors, optical, optics, photonic, photonics,
+                           mechatronics, instrumentation, mechanical, "r&d", "product design", layout, board]
   exclude: [senior, "sr", "sr.", staff, principal, lead, manager, director, head, "vp", "vice president",
             architect, fellow, intern, internship, "co-op", coop, "co op", student, summer, postdoc,
             "post-doc", sales, account, marketing, "business development", nurse, "clinical specialist", technician, "rtl", asic, "physical design", "design verification", dft,
             "timing", "cpu", "gpu", "verification engineer", "sales engineer", "applications engineer",
-            "patent", "regulatory affairs", chief, "expert", supervisor, "team leader"]
+            "patent", "regulatory affairs", chief, "expert", supervisor, "team leader",
+            # chip/silicon roles (need ASIC background) and non-engineering look-alikes
+            silicon, "pre-silicon", "post-silicon", soc, noc, pst, "near-memory", emulation, analytical, chemist, chemistry, microbiology, formulation]
   exclude_overrides: ["associate project manager", "junior project manager"]
 
 companies:

@@ -181,11 +181,13 @@ def workday(src, geo):
     first = post({"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": src.get("search", "")})
     # pick location facet values that are in our area (city level), else Canada
     city_hits, country_hits = {}, {}
+    import screening  # local import keeps sources usable on its own
     for param, vid, desc in _walk_facets(first.get("facets")):
-        d = desc.lower()
-        if any(c in d for c in geo["include"]):
-            city_hits.setdefault(param, []).append(vid)
-        elif d.strip() in ("canada", "ca", "can") or d.endswith(", canada") and "ontario" in d:
+        d = desc.lower().strip()
+        hit = screening.segment_in_area(desc, geo)
+        if hit and hit not in ("Ontario/Canada, city unspecified", "remote (Canada)"):
+            city_hits.setdefault(param, []).append(vid)      # e.g. "Mississauga, Ontario" (not Cambridge, MA)
+        elif d in ("canada", "ca", "can") or hit:
             country_hits.setdefault(param, []).append(vid)
     applied = {}
     if city_hits:
@@ -295,7 +297,10 @@ def pagelinks(src):
             continue
         seen.add(t.lower())
         url = urljoin(src["url"], html.unescape(href))
-        out.append(job(src, re.sub(r"\W+", "-", t.lower())[:80], t, "", url))
+        # some sites put a timestamp in the job URL, e.g. evertz.com/.../job_20260929185515_...
+        d = re.search(r"(20[2-3]\d)(0[1-9]|1[0-2])([0-3]\d)(?:([0-2]\d)([0-5]\d)([0-5]\d))?", url)
+        posted = (f"{d.group(1)}-{d.group(2)}-{d.group(3)}" + (f"T{d.group(4)}:{d.group(5)}:{d.group(6)}Z" if d.group(4) else "")) if d else ""
+        out.append(job(src, re.sub(r"\W+", "-", t.lower())[:80], t, "", url, posted))
     return out
 
 

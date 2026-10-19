@@ -48,7 +48,7 @@ def test_unknown_location_local_company():
     ("Junior Electronics Designer", "hardware", True),
     ("Software Engineer", "hardware", False),
     ("Software Engineer", "medtech", False),
-    ("Embedded Software Engineer", "medtech", True),
+    ("Embedded Software Engineer", "medtech", False),
     ("ASIC Design Verification Engineer", "hardware", False),
     ("RTL Design Engineer", "hardware", False),
     ("Hardware Engineering Intern", "hardware", False),
@@ -78,7 +78,7 @@ def test_titles(title, cat, ok):
     ("At least five years of relevant experience required.", False),
     ("1-3 years of experience in a regulated industry", True),
     ("2+ years experience preferred", True),
-    ("3+ years of experience is an asset", True),
+    ("3+ years of experience is an asset", False),
     ("New grads welcome! Bachelor's degree in Biomedical Engineering.", True),
     ("Master's degree in Electrical Engineering required.", False),
     ("Bachelor's or Master's degree required in engineering", True),
@@ -240,3 +240,97 @@ def test_bamboohr_detail(monkeypatch):
     j["_raw"] = {"detail": "https://voltera.bamboohr.com/careers/137/detail"}
     sources.fetch_detail(j)
     assert j["description"] == "2 years experience" and j["posted"] == "2026-10-02"
+
+
+# ---------------- fixes from the first live run (Oct 2026)
+@pytest.mark.parametrize("loc,ok", [
+    ("Chicago, Illinois, United States | Cambridge (US), Massachusetts, United States", False),
+    ("Cambridge, ON, CA, N3H 4R7", True),
+    ("Cambridge, Canada", True),
+    ("Cambridge, MA", False),
+    ("Waterloo, Iowa", False),
+    ("Burlington, Massachusetts, United States", False),
+    ("Markham, Ontario, Canada | San Diego, California, United States of America", True),
+    ("Etobicoke, Ontario, CA", True),
+    ("Hamilton, New Zealand", False),
+])
+def test_location_lookalikes(loc, ok):
+    assert screening.location_ok(J("Engineer", loc), GEO)[0] is ok
+
+
+def test_area_location_short():
+    j = J("E", "Markham, Ontario, Canada | San Diego, California, United States | Austin, Texas, United States")
+    assert screening.area_location(j, GEO) == "Markham, Ontario, Canada (+2 other locations)"
+
+
+@pytest.mark.parametrize("title,cat,ok", [
+    ("Firmware Engineer, Edge AI Silicon Validation (Embedded C)", "hardware", False),
+    ("Near-Memory Compute System Validation Engineer", "hardware", False),
+    ("PST Validation Engineer", "hardware", False),
+    ("Pre-Silicon Validation Engineer", "hardware", False),
+    ("SoC Power Validation Engineer", "hardware", False),
+    ("DevOps Software Quality Automation Tools Engineer", "hardware", False),
+    ("Early Career Software Test Developer - Propulsion Thermal Management", "hardware", False),
+    ("Embedded Simulation Developer - SIL and Virtualization", "hardware", False),
+    ("Embedded Software Engineer, Markham", "hardware", False),
+    ("Scientist I – Analytical Operations", "medtech", False),
+    ("Technologist I - PPT", "medtech", False),
+    ("Procurement Engineer", "medtech", True),
+    ("Systems Design Engineer (New Grad)", "hardware", True),
+    ("Jr Manufacturing Engineer", "hardware", True),
+    ("R&D Biomedical Engineer (On-Site)", "medtech", True),
+    ("Electrical Engineering Assistant - Battery Energy Storage", "hardware", True),
+    ("Junior Mechanical Designer", "medtech", True),
+    ("Hardware/Software Integration Engineer", "hardware", True),
+    ("Optical Scientist", "medtech", True),
+    ("Field Service Engineer II (Bulk Elemental Analysis) Toronto REMOTE", "medtech", True),
+])
+def test_titles_after_live_run(title, cat, ok):
+    assert screening.title_ok(J(title, cat=cat), CFG)[0] is ok, screening.title_ok(J(title, cat=cat), CFG)
+
+
+@pytest.mark.parametrize("desc,ok", [
+    ("6+ years of experience preferred", False),
+    ("4 years experience is an asset", False),
+    ("3 years of experience preferred", False),
+    ("2 years of experience preferred", True),
+    ("2-4 years of experience", True),
+])
+def test_preferred_cap(desc, ok):
+    assert screening.rules_check(J("Engineer", desc=desc), CFG)[0] is ok
+
+
+def test_posted_text():
+    assert screening.posted_text("Posted 30+ Days Ago") == "30+ days ago"
+    assert screening.posted_text("Posted Today") == "today"
+    assert screening.posted_text("") == "date not listed"
+    assert "days ago" in screening.posted_text("2020-01-01")
+
+
+def test_pagelinks_date_from_url(monkeypatch):
+    page = '<a href="/contact/careers/job_20260929185515_1EJLAH116IA1NF4S">AV Service Engineer</a>'
+    monkeypatch.setattr(sources.S, "get", lambda *a, **k: Resp(text=page))
+    j = sources.pagelinks({"key": "e", "name": "Evertz", "url": "https://evertz.com/contact/careers/"})[0]
+    assert j["posted"] == "2026-09-29T18:55:15Z"
+
+
+def test_workday_ignores_us_cambridge(monkeypatch):
+    calls = []
+    facets = [{"facetParameter": "locations", "values": [
+        {"id": "US1", "descriptor": "Cambridge (US), Massachusetts, United States", "count": 9},
+        {"id": "CA1", "descriptor": "Markham, Ontario, Canada", "count": 2}]}]
+
+    def post(url, json=None, **k):
+        calls.append(json)
+        return Resp({"total": 0, "facets": facets, "jobPostings": []})
+    monkeypatch.setattr(sources.S, "post", post)
+    sources.workday({"key": "p", "name": "Philips", "tenant": "philips", "wd": 3, "site": "x"}, GEO)
+    assert calls[1]["appliedFacets"] == {"locations": ["CA1"]}
+
+
+def test_alert_text_has_age():
+    import notify
+    j = J("PCB Design Engineer", "Toronto, ON")
+    j.update(_posted_text="2 h ago (Oct 18)", _loc_short="Toronto, ON")
+    t = notify.format_text(j, None)
+    assert "Posted: 2 h ago (Oct 18)" in t

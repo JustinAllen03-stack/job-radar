@@ -5,6 +5,7 @@
   python radar.py --check       test every source, print counts, change nothing
   python radar.py --dry-run     full pipeline, print what WOULD be alerted, change nothing
   python radar.py --test-alert  send one test message to your phone
+  python radar.py --rebuild-backlog   re-screen every open job with the current filters and rewrite BACKLOG.md
 """
 import argparse
 import csv
@@ -43,31 +44,8 @@ def save_state(st):
     STATE.write_text(json.dumps(st, indent=0, sort_keys=True))
 
 
-def age_days(posted):
-    """Best-effort age of a posting in days; None if unknown."""
-    if not posted:
-        return None
-    p = str(posted).strip()
-    pl = p.lower()
-    if "today" in pl or "just posted" in pl:
-        return 0
-    if "yesterday" in pl:
-        return 1
-    m = re.search(r"(\d+)\+?\s*days?", pl)
-    if m:
-        return int(m.group(1))
-    try:
-        if re.match(r"\d{4}-\d{2}-\d{2}", p):
-            iso = re.sub(r"([+-]\d{2})(\d{2})$", r"\1:\2", p.replace("Z", "+00:00"))
-            iso = re.sub(r"\.\d+", "", iso)  # drop fractional seconds (py3.10 compat)
-            dt = datetime.fromisoformat(iso)
-        else:
-            dt = parsedate_to_datetime(p)
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return max(0, (datetime.now(timezone.utc) - dt).total_seconds() / 86400)
-    except Exception:
-        return None
+age_days = screening.age_days
+posted_text = screening.posted_text
 
 
 def build_sources(cfg):
@@ -96,7 +74,13 @@ def fetch_one(s, geo):
         return s, [], f"{type(e).__name__}: {str(e)[:200]}", time.time() - t0
 
 
-def screen(j, cfg, profile, use_claude=True):
+def decorate(j, cfg):
+    j["_posted_text"] = posted_text(j.get("posted"))
+    j["_loc_short"] = screening.area_location(j, cfg["geo"])
+    return j
+
+
+def screen(j, cfg, profile, use_claude=True, max_age=None):
     """Returns (passed, note, verdict)."""
     ok, why = screening.location_ok(j, cfg["geo"])
     if not ok:
@@ -110,7 +94,8 @@ def screen(j, cfg, profile, use_claude=True):
     if not ok:
         return False, f"location: {why}", None
     a = age_days(j["posted"])
-    if a is not None and a > cfg["limits"]["max_age_days"]:
+    decorate(j, cfg)
+    if a is not None and a > (max_age or cfg["limits"]["max_age_days"]):
         return False, f"old posting ({int(a)} days)", None
     ok, why, _ = screening.rules_check(j, cfg)
     if not ok:
@@ -127,11 +112,60 @@ def screen(j, cfg, profile, use_claude=True):
     return True, j["_rule_note"], None
 
 
+BACKLOG_HEADER = ("# Open roles that match your filters\n\n"
+                  "Newest first. Ages come from each job board; 'date not listed' means the board doesn't say.\n")
+
+
+def _age_key(item):
+    a = age_days(item[0].get("posted"))
+    return (a is None, a if a is not None else 0, item[0]["company"])
+
+
+def backlog_rows(items):
+    return "\n".join(
+        f"- [ ] **{j['company']}** - [{j['title']}]({j['url']}) - {j.get('_loc_short') or j['location']}"
+        f" - posted {j.get('_posted_text') or posted_text(j.get('posted'))} - _{n}_"
+        for j, n in sorted(items, key=_age_key))
+
+
+def rebuild_backlog(results, cfg, profile, st, dry=False):
+    """Re-screen every currently open job with today's filters and rewrite BACKLOG.md from scratch."""
+    use_claude = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    budget = cfg["limits"].get("rebuild_detail_budget", 400)
+    items, skipped = [], 0
+    for s, jobs, err, dt in results:
+        if err:
+            print(f"ERROR {s['key']}: {err}")
+            continue
+        for j in jobs:
+            st["seen"].setdefault(j["id"], NOW)
+            if budget <= 0:
+                skipped += 1
+                continue
+            if not (screening.location_ok(j, cfg["geo"])[0] and screening.title_ok(j, cfg)[0]):
+                continue
+            budget -= 1
+            ok, note, v = screen(j, cfg, profile, use_claude=use_claude,
+                                 max_age=cfg["limits"].get("backlog_max_age_days", 30))
+            if ok:
+                items.append((j, (f"Fit {v.get('fit')}/5: " if v else "") + note.replace("Claude: ", "")))
+        if s["key"] not in st["seeded_sources"]:
+            st["seeded_sources"].append(s["key"])
+    text = BACKLOG_HEADER + (f"\n_Rebuilt {datetime.now().date()} with {'Claude + rules' if use_claude else 'rules only'}"
+                             f"{f'; {skipped} jobs not checked (budget)' if skipped else ''}._\n\n") + backlog_rows(items) + "\n"
+    print(text)
+    if not dry:
+        (ROOT / "BACKLOG.md").write_text(text)
+        save_state(st)
+        notify.send(text=f"job-radar: BACKLOG.md rebuilt, {len(items)} open roles match your filters.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--test-alert", action="store_true")
+    ap.add_argument("--rebuild-backlog", action="store_true")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text())
@@ -156,6 +190,9 @@ def main():
                 print(f"{'':8}- {j['title']} | {j['location']}")
         return
 
+    if args.rebuild_backlog:
+        return rebuild_backlog(results, cfg, profile, st, dry=args.dry_run)
+
     alerts, backlog, log = [], [], []
     fail_alert_at = cfg["limits"].get("alert_after_failures", 18)
     detail_budget = cfg["limits"].get("seed_detail_budget", 150)
@@ -178,7 +215,8 @@ def main():
                 # but list current matches in BACKLOG.md so you can apply to them too
                 if detail_budget > 0 and screening.location_ok(j, cfg["geo"])[0] and screening.title_ok(j, cfg)[0]:
                     detail_budget -= 1
-                    ok, note, _ = screen(j, cfg, profile, use_claude=False)
+                    ok, note, _ = screen(j, cfg, profile, use_claude=False,
+                                         max_age=cfg["limits"].get("backlog_max_age_days", 30))
                     if ok:
                         backlog.append((j, note))
             else:
@@ -207,19 +245,18 @@ def main():
         print(f"alerted {j['title']} via {sent} {errs or ''}")
         with open(ROOT / "state" / "alerts.csv", "a", newline="") as f:
             csv.writer(f).writerow([datetime.now(timezone.utc).isoformat(timespec="minutes"), j["company"],
-                                    j["title"], j["location"], j["url"], (v or {}).get("reason", j.get("_rule_note", ""))])
+                                    j["title"], j["location"], j["url"], j.get("_posted_text", ""),
+                                    (v or {}).get("reason", j.get("_rule_note", ""))])
 
     if backlog:
         path = ROOT / "BACKLOG.md"
-        old = path.read_text() if path.exists() else "# Open roles found when sources were first added\n\nRules-only screen (no Claude). Check each before applying.\n"
-        rows = "\n".join(f"- [ ] **{j['company']}** - [{j['title']}]({j['url']}) - {j['location']} - _{n}_"
-                         for j, n in sorted(backlog, key=lambda x: (x[0]['company'], x[0]['title'])))
+        old = path.read_text() if path.exists() else BACKLOG_HEADER
         if args.dry_run:
-            print("\n--- BACKLOG (dry run) ---\n" + rows)
+            print("\n--- BACKLOG (dry run) ---\n" + backlog_rows(backlog))
         else:
-            path.write_text(old + f"\n## Added {datetime.now().date()}\n{rows}\n")
-            notify.send(text=f"job-radar is live. {len(backlog)} currently-open roles match your filters; "
-                             f"see BACKLOG.md in your repo. From now on you'll get one message per new posting.")
+            path.write_text(old + f"\n## Added {datetime.now().date()}\n{backlog_rows(backlog)}\n")
+            notify.send(text=f"job-radar: {len(backlog)} currently-open roles from newly added companies match your "
+                             f"filters; see BACKLOG.md in your repo.")
 
     if not args.dry_run:
         save_state(st)
