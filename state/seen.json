@@ -11,229 +11,229 @@
 "ashby-cerebras": {
 "count": 134,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "ashby-miovision": {
 "count": 13,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "bamboohr-avidbots": {
 "count": 10,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "bamboohr-interaxon-muse-": {
 "count": 1,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "bamboohr-perimeter-medical-imaging": {
 "count": 9,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "bamboohr-voltera": {
 "count": 4,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "eightfold-qualcomm": {
 "count": 102,
-"fails": 2,
-"last_ok": 1795887026
+"fails": 0,
+"last_ok": 1795889722
 },
 "greenhouse-geotab": {
 "count": 52,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "greenhouse-lightmatter": {
 "count": 89,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "greenhouse-tenstorrent": {
 "count": 153,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "jazzhr-intellijoint-surgical": {
 "count": 5,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "jazzhr-myant": {
 "count": 16,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "jibe-amd": {
 "count": 68,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "lever-kepler-communications": {
 "count": 14,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "pagelinks-evertz": {
 "count": 122,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "pagelinks-moleculight": {
 "count": 62,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "pagelinks-profound-medical": {
-"fails": 4005
+"fails": 4006
 },
 "pagelinks-starfish-medical": {
 "count": 32,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "pagelinks-venus-concept": {
 "count": 0,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "sf_rss-ats-corporation": {
 "count": 40,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "sf_rss-celestica": {
 "count": 60,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "sf_rss-northern-digital-ndi-": {
 "count": 13,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "sf_rss-olympus": {
 "count": 20,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "smartrecruiters-cloud-dx": {
 "count": 1,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "workday-abbott": {
 "count": 4,
-"fails": 54,
+"fails": 55,
 "last_ok": 1795841123
 },
 "workday-altera": {
 "count": 10,
-"fails": 15,
+"fails": 16,
 "last_ok": 1795875323
 },
 "workday-baxter": {
 "count": 18,
-"fails": 7,
+"fails": 8,
 "last_ok": 1795882523
 },
 "workday-bd": {
 "count": 1,
-"fails": 0,
+"fails": 1,
 "last_ok": 1795888829
 },
 "workday-blackberry-qnx": {
 "count": 1,
-"fails": 26,
+"fails": 27,
 "last_ok": 1795866326
 },
 "workday-clearpath-otto-rockwell-": {
 "count": 23,
-"fails": 101,
+"fails": 102,
 "last_ok": 1795800629
 },
 "workday-danaher-sciex-beckman-leica-": {
 "count": 30,
-"fails": 7,
+"fails": 8,
 "last_ok": 1795882523
 },
 "workday-ecobee-generac-": {
 "count": 24,
-"fails": 194,
+"fails": 195,
 "last_ok": 1795719630
 },
 "workday-ge-healthcare": {
 "count": 4,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "workday-gm-canadian-technical-centre": {
-"count": 21,
-"fails": 117,
-"last_ok": 1795787123
+"count": 23,
+"fails": 0,
+"last_ok": 1795889722
 },
 "workday-intel": {
 "count": 17,
-"fails": 234,
+"fails": 235,
 "last_ok": 1795684528
 },
 "workday-johnson-johnson-medtech": {
 "count": 12,
 "fails": 0,
-"last_ok": 1795888829
+"last_ok": 1795889722
 },
 "workday-magna": {
 "count": 40,
-"fails": 3,
+"fails": 4,
 "last_ok": 1795886126
 },
 "workday-marvell": {
 "count": 20,
-"fails": 70,
+"fails": 71,
 "last_ok": 1795827634
 },
 "workday-medtronic": {
 "count": 8,
-"fails": 4,
+"fails": 5,
 "last_ok": 1795885229
 },
 "workday-philips": {
 "count": 10,
-"fails": 423,
+"fails": 424,
 "last_ok": 1795515695
 },
 "workday-siemens-healthineers-varian": {
 "count": 18,
-"fails": 3,
+"fails": 4,
 "last_ok": 1795886126
 },
 "workday-standard-biotools": {
 "count": 0,
-"fails": 7,
-"last_ok": 1795882523
+"fails": 0,
+"last_ok": 1795889722
 },
 "workday-stryker": {
 "count": 6,
-"fails": 7,
+"fails": 8,
 "last_ok": 1795882523
 },
 "workday-teledyne-dalsa-flir-": {
 "count": 30,
-"fails": 28,
-"last_ok": 1795864528
+"fails": 0,
+"last_ok": 1795889722
 },
 "workday-thales-canada": {
 "count": 1,
-"fails": 0,
+"fails": 1,
 "last_ok": 1795888829
 },
 "workday-thermo-fisher": {
 "count": 45,
-"fails": 7,
+"fails": 8,
 "last_ok": 1795882523
 }
 },
@@ -1892,6 +1892,7 @@
 "workday-gm-canadian-technical-centre:JR-202623987": 1794994226.6284642,
 "workday-gm-canadian-technical-centre:JR-202624092": 1795565727.6575873,
 "workday-gm-canadian-technical-centre:JR-202624328": 1794901520.109782,
+"workday-gm-canadian-technical-centre:JR-202624497": 1795889722.2936325,
 "workday-gm-canadian-technical-centre:JR-202624609": 1795493719.3957446,
 "workday-intel:JR0286164": 1793458830.6946778,
 "workday-intel:JR0286282": 1792375197.1781998,
